@@ -1,4 +1,5 @@
 ﻿using AzCoreWeb.Models;
+using AzCoreWeb.Server.Models.Response;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -22,13 +23,12 @@ namespace AzCoreWeb.Server.Controllers
             try
             {
                 var info = await _serverInfo.GetInfo();
-                return Ok(info);
+                return Ok(new StatusResponse { Info = info });
             }
             catch
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-
         }
     }
 }

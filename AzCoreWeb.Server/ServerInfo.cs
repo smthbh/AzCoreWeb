@@ -64,7 +64,7 @@ namespace AzCoreWeb.Server
                 };
 
                 // Add basic authentication header
-                var byteArray = Encoding.ASCII.GetBytes("websiteuser:websitepassword");
+                var byteArray = Encoding.ASCII.GetBytes($"{_soapUser}:{_soapPassword}");
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
                 var response = await httpClient.SendAsync(request);
