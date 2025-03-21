@@ -1,0 +1,6 @@
+@AzCoreWeb.Server_HostAddress = http://localhost:5189
+
+GET {{AzCoreWeb.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
