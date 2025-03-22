@@ -1,5 +1,9 @@
-﻿using System.Text;
+﻿using AzCoreWeb.Server.Models.Request;
+using AzCoreWeb.Server.Models.Response;
+using Microsoft.AspNetCore.Identity.Data;
+using System.Text;
 using System.Text.Json;
+using System.Xml.Serialization;
 
 namespace AzCoreWeb.Server
 {
@@ -12,32 +16,29 @@ public class Accounts
 
         public Accounts(IConfiguration configuration)
         {
-            _soapUrl = configuration["SoapUrl"];
-            _soapUser = configuration["SoapUser"];
-            _soapPassword = configuration["SoapPassword"];
+            _soapUrl = configuration["SoapUrl"] ?? throw new ArgumentNullException(nameof(configuration), "SoapUrl cannot be null");
+            _soapUser = configuration["SoapUser"] ?? throw new ArgumentNullException(nameof(configuration), "SoapUser cannot be null");
+            _soapPassword = configuration["SoapPassword"] ?? throw new ArgumentNullException(nameof(configuration), "SoapPassword cannot be null");
         }
 
         public async Task<string> CreateUser(string username, string password)
         {
-            var soapEnvelope = $@"<SOAP-ENV:Envelope  
-                    xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' 
-                    xmlns:SOAP-ENC='http://schemas.xmlsoap.org/soap/encoding/' 
-                    xmlns:xsi='http://www.w3.org/1999/XMLSchema-instance' 
-                    xmlns:xsd='http://www.w3.org/1999/XMLSchema' 
-                    xmlns:ns1='urn:AC'>
-                    <SOAP-ENV:Body>
-                        <ns1:executeCommand>
-                            <command>account create {username} {password}</command>
-                        </ns1:executeCommand>
-                    </SOAP-ENV:Body>
-                </SOAP-ENV:Envelope>";
-            //var testCommand = new Models.executeCommand { command = "account create " + username + " " + password };
+            var accountRequest = new RequestEnvelope
+            {
+                Body = new RequestEnvelopeBody
+                {
+                    executeCommand = new executeCommand
+                    {
+                        command = "account create " + username + " " + password
+                    }
+                }
+            };
+
+            string xmlString = SerializeToXml(accountRequest);
 
             using (var httpClient = new HttpClient())
             {
-                var content = new StringContent(soapEnvelope, Encoding.UTF8, "text/xml");
-                var testCommandContent = new StringContent(JsonSerializer.Serialize(soapEnvelope), Encoding.UTF8, "application/json");
-
+                var content = new StringContent(xmlString, Encoding.UTF8, "text/xml");
                 var request = new HttpRequestMessage(HttpMethod.Post, _soapUrl)
                 {
                     Content = content
@@ -49,8 +50,31 @@ public class Accounts
 
                 var response = await httpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsStringAsync();
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                // Deserialize the response string to ResponseEnvelope
+                using (var stringReader = new StringReader(responseString))
+                {
+                    var serializer = new XmlSerializer(typeof(ResponseEnvelope));
+                    var responseEnvelope = serializer.Deserialize(stringReader) as ResponseEnvelope;
+                    if (responseEnvelope?.Body?.executeCommandResponse?.result == null)
+                    {
+                        throw new InvalidOperationException("Invalid response received from the server.");
+                    }
+                    return responseEnvelope.Body.executeCommandResponse.result;
+                }
             }
         }
+
+        static string SerializeToXml<T>(T obj)
+        {
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
+            using (StringWriter textWriter = new StringWriter())
+            {
+                xmlSerializer.Serialize(textWriter, obj);
+                return textWriter.ToString();
+            }
+        }
+
     }
 }

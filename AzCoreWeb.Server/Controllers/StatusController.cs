@@ -22,7 +22,7 @@ namespace AzCoreWeb.Server.Controllers
         {
             try
             {
-                var info = await _serverInfo.GetInfo();
+                var info = await _serverInfo.GetServerStatusAsync();
                 return Ok(new StatusResponse { Info = info });
             }
             catch
