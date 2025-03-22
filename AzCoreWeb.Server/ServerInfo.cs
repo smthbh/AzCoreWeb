@@ -14,34 +14,13 @@ namespace AzCoreWeb.Server
 
         public ServerInfo(IConfiguration configuration)
         {
-            _soapUrl = configuration["SoapUrl"];
-            _soapUser = configuration["SoapUser"];
-            _soapPassword = configuration["SoapPassword"];
+            _soapUrl = configuration["SoapUrl"] ?? throw new ArgumentNullException(nameof(configuration), "SoapUrl cannot be null");
+            _soapUser = configuration["SoapUser"] ?? throw new ArgumentNullException(nameof(configuration), "SoapUser cannot be null");
+            _soapPassword = configuration["SoapPassword"] ?? throw new ArgumentNullException(nameof(configuration), "SoapPassword cannot be null");
         }
 
-        public async Task<string> GetInfo()
+        public async Task<string> GetServerStatusAsync()
         {
-            var status = await GetServerStatusAsync();
-
-            return status.Body.executeCommandResponse.result;
-        }
-
-        public async Task<ResponseEnvelope> GetServerStatusAsync()
-        {
-            // Example SOAP request
-            //var soapEnvelope = @"<SOAP-ENV:Envelope  
-            //    xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' 
-            //    xmlns:SOAP-ENC='http://schemas.xmlsoap.org/soap/encoding/' 
-            //    xmlns:xsi='http://www.w3.org/1999/XMLSchema-instance' 
-            //    xmlns:xsd='http://www.w3.org/1999/XMLSchema' 
-            //    xmlns:ns1='urn:AC'>
-            //    <SOAP-ENV:Body>
-            //        <ns1:executeCommand>
-            //            <command>server info</command>
-            //        </ns1:executeCommand>
-            //    </SOAP-ENV:Body>
-            //</SOAP-ENV:Envelope>";
-
             var infoResponse = new RequestEnvelope
             {
                 Body = new RequestEnvelopeBody
@@ -63,7 +42,6 @@ namespace AzCoreWeb.Server
                     Content = content
                 };
 
-                // Add basic authentication header
                 var byteArray = Encoding.ASCII.GetBytes($"{_soapUser}:{_soapPassword}");
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
@@ -71,11 +49,17 @@ namespace AzCoreWeb.Server
                 response.EnsureSuccessStatusCode();
                 var responseString = await response.Content.ReadAsStringAsync();
 
-                // Deserialize the response string to ResponseEnvelope
                 using (var stringReader = new StringReader(responseString))
                 {
                     var serializer = new XmlSerializer(typeof(ResponseEnvelope));
-                    return (ResponseEnvelope)serializer.Deserialize(stringReader);
+                    var responseEnvelope = serializer.Deserialize(stringReader) as ResponseEnvelope;
+
+                    if (responseEnvelope?.Body?.executeCommandResponse?.result == null)
+                    {
+                        throw new InvalidOperationException("Invalid response received from the server.");
+                    }
+
+                    return responseEnvelope.Body.executeCommandResponse.result;
                 }
             }
         }
@@ -89,6 +73,5 @@ namespace AzCoreWeb.Server
                 return textWriter.ToString();
             }
         }
-
     }
 }
