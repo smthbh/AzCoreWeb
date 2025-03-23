@@ -1,6 +1,23 @@
-<h1 id="tableLabel">Azeroth Core Web</h1>
+<div style="text-align: center;">
+  <h1 id="tableLabel">Azeroth Core Web</h1>
 
-<p *ngIf="!formattedStatusInfo"><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationangular">https://aka.ms/jspsintegrationangular</a> for more details.</em></p>
+  <p *ngIf="!formattedStatusInfo"><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationangular">https://aka.ms/jspsintegrationangular</a> for more details.</em></p>
 
-<p [innerHTML]="formattedStatusInfo"></p>
+  <p [innerHTML]="formattedStatusInfo"></p>
 
+  <h2>Create Account</h2>
+  <div>
+    <label for="username">Username:</label>
+    <input id="username" type="text" [(ngModel)]="username">
+  </div>
+  <div>
+    <label for="password">Password:</label>
+    <input id="password" type="password" [(ngModel)]="password">
+  </div>
+  <div>
+    <button (click)="onCreateClick(username, password)">Create</button>
+  </div>
+
+  <p *ngIf="Response.info">{{ Response.info }}</p>
+
+</div>
