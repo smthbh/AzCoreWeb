@@ -39,7 +39,7 @@ namespace AzCoreWeb.Server.Controllers
             }
 
             // Check for unsafe special characters in password
-            if (Regex.IsMatch(account.Password, @"[^a-zA-Z0-9!@#$%^&*()_+=-]"))
+            if (Regex.IsMatch(account.Password, @"[^a-zA-Z0-9!@#%*_+=-]"))
             {
                 return BadRequest("Password contains unsafe special characters.");
             }
