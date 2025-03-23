@@ -51,7 +51,7 @@ export class AppComponent implements OnInit {
       },
       (error) => {
         console.error(error);
-        this.Response.info = error.error.title ?? 'An error occured';
+        this.Response.info = error.error.title ?? error.error ?? 'An error occured';
       }
     );
   }
