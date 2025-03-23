@@ -7,3 +7,6 @@ Getting started:
 - Enable SOAP in Azeroth Core
 - Create user for site usage
 - Set user's gmlevel to 3
+
+UI:
+<img src=https://i.imgur.com/A0WpHY7.png>
