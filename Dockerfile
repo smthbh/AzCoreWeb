@@ -9,8 +9,8 @@ apt-get install -y build-essential nodejs
 # End Install
 WORKDIR /app
 COPY . .
-RUN dotnet restore
-RUN dotnet publish -c Release -o out
+RUN dotnet restore ./AzCoreWeb.Server/AzCoreWeb.Server.csproj
+RUN dotnet publish ./AzCoreWeb.Server/AzCoreWeb.Server.csproj -c Release -o out
 
 # Run
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
