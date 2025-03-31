@@ -1,20 +1,23 @@
-# Build
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-# Install NodeJs
-RUN apt-get update && \
-apt-get install -y wget && \
-apt-get install -y gnupg2 && \
-wget -qO- https://deb.nodesource.com/setup_20.x | bash - && \
-apt-get install -y build-essential nodejs
-# End Install
+# Stage 1: Build the Angular app
+FROM node:latest as build-client
 WORKDIR /app
-COPY . .
-RUN dotnet restore
-RUN dotnet publish -c Release -o out
+COPY azcoreweb.client/package*.json ./
+RUN npm install
+COPY azcoreweb.client .
+RUN npm run build
 
-# Run
+# Stage 2: Build the .NET API
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-api
+WORKDIR /src
+COPY AzCoreWeb.Server .
+RUN dotnet restore AzCoreWeb.Server.csproj
+#COPY . .
+RUN dotnet publish AzCoreWeb.Server.csproj -c Release -o /app/publish
+
+# Stage 3: Create the final image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=build /app/out .
-ENV ASPNETCORE_URLS=http://*:80
-CMD dotnet App.dll
+COPY --from=build-api /app/publish .
+COPY --from=build-client /app/dist/azcoreweb.client/browser ./wwwroot
+#ENV ASPNETCORE_URLS=http://localhost:5000
+ENTRYPOINT ["dotnet", "AzCoreWeb.Server.dll"]
