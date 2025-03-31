@@ -1,0 +1,12 @@
+# Stage 1: Build the .NET API
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-api
+WORKDIR /src
+COPY AzCoreWeb.Server ./
+RUN dotnet restore AzCoreWeb.Server.csproj
+RUN dotnet publish AzCoreWeb.Server.csproj -c Release -o /app/publish
+
+# Stage 2: Create the final image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build-api /app/publish ./
+ENTRYPOINT ["dotnet", "AzCoreWeb.Server.dll"]
