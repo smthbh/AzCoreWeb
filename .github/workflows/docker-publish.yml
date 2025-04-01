@@ -48,7 +48,7 @@ jobs:
             ghcr.io/${{ github.repository }}
           tags: |
             type=latest
-            type=${{ GITHUB_REF }}
+            type=${{ github.ref_name }}
 
       - name: Build and push Docker images
         id: push
