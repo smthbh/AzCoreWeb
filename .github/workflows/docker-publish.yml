@@ -46,9 +46,6 @@ jobs:
           images: |
             iyersmith/azcoreweb
             ghcr.io/${{ github.repository }}
-          tags: |
-            type=latest
-            type=${{ github.ref_name }}
 
       - name: Build and push Docker images
         id: push
