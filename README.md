@@ -9,4 +9,4 @@ Getting started:
 - Set user's gmlevel to 3
 
 UI:
-<img src=https://i.imgur.com/A0WpHY7.png>
+<img src=https://i.imgur.com/JVAH0Zp.png>
