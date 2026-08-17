@@ -2,6 +2,7 @@ using AzCoreWeb.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddSingleton<Accounts>();
 builder.Services.AddSingleton<ServerInfo>();
