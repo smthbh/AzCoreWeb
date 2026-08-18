@@ -7,7 +7,7 @@ COPY azcoreweb.client .
 RUN npm run build
 
 # Stage 2: Build the .NET API
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-api
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build-api
 WORKDIR /src
 COPY AzCoreWeb.Server .
 RUN dotnet restore AzCoreWeb.Server.csproj
@@ -15,7 +15,7 @@ RUN dotnet restore AzCoreWeb.Server.csproj
 RUN dotnet publish AzCoreWeb.Server.csproj -c Release -o /app/publish
 
 # Stage 3: Create the final image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build-api /app/publish .
 COPY --from=build-client /app/dist/azcoreweb.client/browser ./wwwroot
